@@ -33,7 +33,7 @@ class CartItem extends React.Component {
             <div className="cart-item">
                  {/* { console.log(this.props) } */}
                  <div className="left-block">
-                     <img alt="" style={style.image} />
+                     <img alt="" style={style.image} src={product.img}/>
                  </div>
                  <div className="right-block">
                      <div style={{fontSize:25}}>{product.title}</div>
@@ -56,6 +56,7 @@ class CartItem extends React.Component {
                      <img alt="delete"
                           className="action-icons"
                           src="https://cdn-icons.flaticon.com/png/512/484/premium/484662.png?token=exp=1646026207~hmac=2d71b3f414bd7967f66f8baab0951825" 
+                           onClick={()=>{this.props.DeleteProduct(product.id)}}
                      />
                  </div>
                  </div>

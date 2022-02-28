@@ -1,6 +1,7 @@
 import React from 'react'
 import CartItem from './CartItem'
 
+/*
 class Cart extends React.Component{
     constructor() {
         super();
@@ -60,9 +61,9 @@ class Cart extends React.Component{
                         <CartItem 
                         product={product} 
                         key={product.id}
-                        onIncreaseQuantity={this.handleIncreaseQuantity}
-                        onDecreaseQuantity={this.handleDecreaseQuantity}
-                        
+                        onIncreaseQuantity={props.handleIncreaseQuantity}
+                        onDecreaseQuantity={props.handleDecreaseQuantity}
+                        DeleteProduct={props.DeleteProduct}
                       />
                        )
                        
@@ -72,4 +73,28 @@ class Cart extends React.Component{
         )
     }
 }
+*/
+
+function Cart (props){
+    
+        const {products}=props;
+        
+        return (
+          <div className="cart">
+              
+          {products.map((product)=>{
+            return (
+              <CartItem 
+                product={product} 
+                key={product.id}
+                onIncreaseQuantity={props.onIncreaseQuantity}
+                onDecreaseQuantity={props.onDecreaseQuantity}
+                DeleteProduct={props.DeleteProduct}
+              />
+            )
+                })}
+            
+            </div>
+        );
+    }
 export default Cart
