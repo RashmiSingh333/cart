@@ -33,6 +33,7 @@ code {
   display:flex;
   flex-direction: column;
   height:80vh;
+  flex-wrap: wrap;
 }
 
 /* styling for Navbar */

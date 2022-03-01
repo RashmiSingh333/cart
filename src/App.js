@@ -2,63 +2,145 @@ import React from 'react'
 import Cart from './Cart'
 import Navbar from './Navbar';
 import Footer from './Footer';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
 
 
 class App extends React.Component{
   constructor() {
       super();
       this.state= {
-          products : [
-              {
-                  title:'Mobile Phone',
-                  price:9999,
-                  qty:1,
-                  img:'https://th.bing.com/th/id/R.edddb95fa11c26b1d0018352b0ae9f88?rik=rdEmhpeunru2ng&riu=http%3a%2f%2fmmoculture.com%2fwp-content%2fuploads%2f2018%2f10%2fRazer-Phone-2-photo-2.jpg&ehk=KhuiR3pIUZTwg4TjhlLmYV%2bsZYtIasppPEs6tMAChY0%3d&risl=&pid=ImgRaw&r=0',
-                  id:1
-              },
-              {
-                  title:'Watch',
-                  price:999,
-                  qty:1,
-                  img:'https://retailbd.com/wp-content/uploads/2018/03/relogio-masculino-Watches-Men-LIGE-Sport-Men-s-Mechanical-Watches-Fashion-Business-Automatic-Watch-Man-Waterproof-3-768x768.jpg',
-                  id:2
-              },
-              {
-                  title:'Laptop',
-                  price:99999,
-                  qty:1,
-                  img:'https://i.ebayimg.com/00/s/NzY4WDEwMjQ=/z/5UcAAOSwjARchCnt/$_86.JPG',
-                  id:3
-              }
-          ]
+          products : [] ,
+          loading:true
       }
+      this.db=firebase.firestore();
   }
+
+  componentDidMount () {
+    //console.log('run')
+    /*
+    firebase
+        .firestore()
+        .collection('products')
+        .get()
+        .then((snapshot) => {
+          console.log( 'snapshot',snapshot);
+
+          snapshot.docs.map((doc) => {
+            console.log('objects->',doc.data());
+          });
+          const products = snapshot.docs.map((doc) => {
+            const data = doc.data();
+
+            data['id'] = doc.id;
+            return data;
+          })
+
+          this.setState({
+            products: products,
+            loading: false
+          })
+
+        })*/
+    this.db
+        .collection('products')
+        //.where('price','>',999)
+        .orderBy('price')
+        .onSnapshot((snapshot) => {
+          console.log( 'snapshot',snapshot);
+
+          snapshot.docs.map((doc) => {
+            console.log('objects->',doc.data());
+          });
+          const products = snapshot.docs.map((doc) => {
+            const data = doc.data();
+
+            data['id'] = doc.id;
+            return data;
+          })
+
+          this.setState({
+            products: products,
+            loading: false
+          })
+
+        })
+
+  }
+  
   handleIncreaseQuantity = (product) => {
       // console.log('Hey please incre the qty of ',product)
       const { products } = this.state;
       const index = products.indexOf(product)
-      products[index].qty +=1;
-      this.setState({
-          products : products
-      });
+      // products[index].qty +=1;
+      // this.setState({
+      //   products : products
+      // });
+       
+      const docRef = this.db.collection('products').doc(products[index].id)
+
+      docRef
+         .update({
+           qty: products[index].qty + 1
+         })
+         .then(()=>{
+           console.log('Updated successfully')
+         })
+         .catch((error) => {
+           console.log('Error : ',error)
+         })
   }
   handleDecreaseQuantity = (product) => {
       // console.log('Hey please decre the qty of ',product)
       const { products } = this.state;
-      const index = products.indexOf(product)
+      const index = products.indexOf(product);
+
+      //if(products[index].qty > 0){
+      //  products[index].qty -=1;
+      //    this.setState({
+      //         products : products
+      //  })
+      // }  
+      
       if(products[index].qty > 0){
-          products[index].qty -=1;
-          this.setState({
-               products : products
-       });
+
+        const docRef = this.db.collection('products').doc(products[index].id)
+
+        docRef
+         .update({
+           qty: products[index].qty - 1
+         })
+         .then(()=>{
+           console.log('Updated successfully')
+         })
+         .catch((error) => {
+           console.log('Error : ',error)
+         })
       }
-  }
+      
+    }
+
+
+  
   handleDeleteProduct = (id)=>{
     const {products} = this.state;
-    const newProducts = products.filter((items) => items.id !== id);
-    this.setState({
-      products : newProducts
-    })
+    
+   // const newProducts = products.filter((items) => items.id !== id);
+   // this.setState({
+   //   products : newProducts
+   // })
+    
+    const docRef = this.db.collection('products').doc(id) ;
+    
+    docRef
+      .delete()
+      .then(()=>{
+        console.log('Deleted successfully')
+      })
+      .catch((error) => {
+        console.log('Error : ',error)
+      })
+   
   }
 
   getCartCount(){
@@ -79,20 +161,41 @@ class App extends React.Component{
 
     products.map((product)=>{
       cartTotal= cartTotal + product.qty*product.price;
+      return ''
     })
     return cartTotal;
   }
+   addProduct = ()=> {
+     this.db
+        .collection('products')
+        .add({
+          img: '',
+          price:9999,
+          qty:1,
+          title: 'Laptop'
+        })
+        .then((docRef)=>{
+          console.log('Product has been added',docRef)
+        })
+        .catch((error)=>{
+          console.log('Error : ',error)
+        })
+   }
   render(){
-      const {products}=this.state
+      const {products, loading}=this.state
       return( 
           <div className="App">
               <Navbar count={this.getCartCount()} />
+              {loading && <h1>Loading Products...</h1>}
+              {/*<button onClick={this.addProduct}>Add a Product</button>*/}
+              
               <Cart  
                products={products}
                onIncreaseQuantity={this.handleIncreaseQuantity}
                onDecreaseQuantity={this.handleDecreaseQuantity}
                DeleteProduct={this.handleDeleteProduct}
                />
+              
               <Footer TotalPrice={this.getTotalCartPrice()} />
           </div>
       );
